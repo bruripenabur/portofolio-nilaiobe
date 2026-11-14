@@ -1,0 +1,6 @@
+{
+  "name": "SIMPEL-OBE 04 | Buku Nilai & Portofolio Perkuliahan",
+  "description": "Modul 4 Portal Ekosistem Digital OBE Universitas Pattimura: Buku Nilai Interaktif Berbasis Rubrik, Repositori Portofolio Akreditasi, dan Refleksi Pembelajaran.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
