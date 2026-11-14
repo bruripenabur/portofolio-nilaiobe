@@ -17,6 +17,10 @@ interface Tab1ClassManagementProps {
   onChangeKelas: (val: string) => void;
   tahunAkademik: string;
   onChangeTahunAkademik: (val: string) => void;
+  dosenPengampu: string;
+  onChangeDosenPengampu: (val: string) => void;
+  prodi: string;
+  onChangeProdi: (val: string) => void;
   students: Student[];
   onAddStudents: (newStudents: Array<{ nim: string; nama: string }>) => {
     added: number;
@@ -32,6 +36,10 @@ export function Tab1ClassManagement({
   onChangeKelas,
   tahunAkademik,
   onChangeTahunAkademik,
+  dosenPengampu,
+  onChangeDosenPengampu,
+  prodi,
+  onChangeProdi,
   students,
   onAddStudents,
   onRemoveStudent,
@@ -186,6 +194,34 @@ export function Tab1ClassManagement({
               value={tahunAkademik}
               onChange={(e) => onChangeTahunAkademik(e.target.value)}
               placeholder="Misal: 2025/2026 - Ganjil"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-800 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="input-dosen" className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Nama Dosen Pengampu
+            </label>
+            <input
+              id="input-dosen"
+              type="text"
+              value={dosenPengampu}
+              onChange={(e) => onChangeDosenPengampu(e.target.value)}
+              placeholder="Diisi otomatis dari profil SSO"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-800 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="input-prodi" className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Program Studi
+            </label>
+            <input
+              id="input-prodi"
+              type="text"
+              value={prodi}
+              onChange={(e) => onChangeProdi(e.target.value)}
+              placeholder="Diisi otomatis dari profil SSO"
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-blue-800 focus:outline-none"
             />
           </div>

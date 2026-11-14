@@ -9,19 +9,42 @@ import type {
 } from '../types/obe';
 
 export const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL || '[MASUKKAN_PROJECT_URL_SUPABASE_ANDA]';
+  import.meta.env.VITE_SUPABASE_URL || 'https://eysccwxpgdcoqfvaalye.supabase.co';
 export const SUPABASE_ANON_KEY =
-  import.meta.env.VITE_SUPABASE_ANON_KEY || '[MASUKKAN_ANON_KEY_SUPABASE_ANDA]';
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  'sb_publishable_z-P7ucdZVBwh8dH4kcU7Pg_mH6vL9P8';
 
 export const MODUL_5_URL =
-  import.meta.env.VITE_MODUL_5_URL || '[MASUKKAN_URL_MODUL_5_PENGUKURAN_CPL]';
+  import.meta.env.VITE_MODUL_5_URL || 'https://cpl.simpatti.site';
 
 export const isSupabaseConfigured =
-  SUPABASE_URL.startsWith('http://') || SUPABASE_URL.startsWith('https://');
+  (SUPABASE_URL.startsWith('http://') || SUPABASE_URL.startsWith('https://')) &&
+  Boolean(SUPABASE_ANON_KEY) &&
+  !SUPABASE_ANON_KEY.includes('[MASUKKAN_');
 
 export const supabase: SupabaseClient | null = isSupabaseConfigured
-  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false,
+      },
+    })
   : null;
+
+export async function checkSupabaseConnection(): Promise<{
+  connected: boolean;
+  message: string;
+}> {
+  if (!supabase) {
+    return { connected: false, message: 'Konfigurasi Supabase belum diisi' };
+  }
+  const { error } = await supabase.from('obe_rps').select('id').limit(1);
+  if (error) {
+    return { connected: false, message: error.message };
+  }
+  return { connected: true, message: 'Supabase Connected (SIMPEL-OBE DB)' };
+}
 
 export async function fetchRpsList(): Promise<{
   data: RpsCourse[];
@@ -185,14 +208,30 @@ export async function savePortfolioAndSync(payload: {
   tahun_akademik: string;
   daftar_nilai_rubrik: DaftarNilaiRubrikPayload[];
   dokumen_portofolio: DokumenPortofolioPayload;
+  access_token?: string;
+  refresh_token?: string;
 }): Promise<{ id: string; isSimulated: boolean; redirectUrl: string }> {
+  const buildTargetUrl = (portofolioId: string): string => {
+    const url = new URL(MODUL_5_URL);
+    url.searchParams.set('rps_id', payload.rps_id);
+    url.searchParams.set('portofolio_id', portofolioId);
+    if (payload.access_token && payload.refresh_token) {
+      url.hash = `sso_token=${encodeURIComponent(
+        JSON.stringify({
+          access_token: payload.access_token,
+          refresh_token: payload.refresh_token,
+        })
+      )}`;
+    }
+    return url.toString();
+  };
+
   if (!supabase) {
     const simulatedId = `demo-portofolio-${Date.now()}`;
-    const redirectUrl = `${MODUL_5_URL}?rps_id=${encodeURIComponent(payload.rps_id)}&portofolio_id=${encodeURIComponent(simulatedId)}`;
     return {
       id: simulatedId,
       isSimulated: true,
-      redirectUrl,
+      redirectUrl: buildTargetUrl(simulatedId),
     };
   }
 
@@ -229,11 +268,9 @@ export async function savePortfolioAndSync(payload: {
   }
 
   const savedId = String(data.id);
-  const redirectUrl = `${MODUL_5_URL}?rps_id=${encodeURIComponent(payload.rps_id)}&portofolio_id=${encodeURIComponent(savedId)}`;
-
   return {
     id: savedId,
     isSimulated: false,
-    redirectUrl,
+    redirectUrl: buildTargetUrl(savedId),
   };
 }
